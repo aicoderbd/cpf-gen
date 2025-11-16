@@ -1,41 +1,41 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>CPF Toolkit – Buscar, filtrar e sortear CPFs do data.json</title>
+  <title>CPF Toolkit – View, Filter & Draw CPFs from data.json</title>
 
-  <!-- SEO básico -->
+  <!-- Basic SEO -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta
     name="description"
-    content="CPF Toolkit: ferramenta em HTML para buscar, filtrar e sortear CPFs existentes no arquivo data.json, exibindo nome, data de nascimento, CPF, RG, curso, período, dias e chamada."
+    content="CPF Toolkit: a simple web app to view, filter and randomly pick CPF records from data.json, showing name, birth date, CPF, RG, course, period, days and roll call."
   />
   <meta
     name="keywords"
-    content="cpf, gerador de cpf, lista de cpfs, consultar cpf, data.json, cadastro de alunos, cursos profissionalizantes"
+    content="cpf, cpf generator, cpf list, cpf viewer, data.json, student registry, vocational courses"
   />
   <meta name="robots" content="index,follow" />
-  <link rel="canonical" href="https://seu-dominio.com/cpf-toolkit" />
+  <link rel="canonical" href="https://cpf-gen.web.app/" />
 
   <!-- Open Graph / Social -->
-  <meta property="og:title" content="CPF Toolkit – Visualizador de CPFs do data.json" />
+  <meta property="og:title" content="CPF Toolkit – Viewer for CPFs from data.json" />
   <meta
     property="og:description"
-    content="Visualize, filtre e sorteie registros de CPF já existentes em data.json, com nome, data de nascimento, RG, curso, período, dias e chamada."
+    content="View, filter and randomly pick existing CPF records from data.json with name, birth date, RG, course, period, days and roll call."
   />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://seu-dominio.com/cpf-toolkit" />
-  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:url" content="https://cpf-gen.web.app/" />
+  <meta property="og:locale" content="en_US" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="CPF Toolkit – Visualizador de CPFs" />
+  <meta name="twitter:title" content="CPF Toolkit – CPF Viewer" />
   <meta
     name="twitter:description"
-    content="Ferramenta simples em HTML para consultar CPFs de data.json com filtros e sorteio seguro."
+    content="A lightweight HTML tool to inspect existing CPFs from data.json with filters and safe random pick."
   />
 
-  <!-- JSON-LD (ajuste a URL/domínio se quiser usar em produção) -->
+  <!-- JSON-LD (structured data) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -43,8 +43,8 @@
     "name": "CPF Toolkit - data.json Viewer",
     "applicationCategory": "UtilityApplication",
     "operatingSystem": "Any",
-    "url": "https://seu-dominio.com/cpf-toolkit",
-    "description": "Ferramenta em HTML para buscar, filtrar e sortear CPFs existentes no arquivo data.json, exibindo nome, data de nascimento, CPF, RG, curso, período, dias e chamada."
+    "url": "https://cpf-gen.web.app/",
+    "description": "Web app to view, filter and draw existing CPF records from data.json, showing name, birth date, CPF, RG, course, period, days and roll call."
   }
   </script>
 
@@ -636,6 +636,15 @@
       font-size: 0.8rem;
       margin-top: 4px;
     }
+
+    a.link {
+      color: var(--accent-strong);
+      text-decoration: none;
+    }
+
+    a.link:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -647,14 +656,15 @@
           <span class="badge">data.json</span>
         </h1>
         <p class="subtitle">
-          Interface para <strong>buscar, filtrar e sortear</strong> CPFs existentes no arquivo
-          <code>data.json</code>, exibindo <strong>nome, data de nascimento, CPF, RG, curso, período, dias e chamada</strong>.
-          Nenhum CPF novo é criado – apenas trabalhamos com os dados já existentes.
+          A clean interface to <strong>search, filter and draw</strong> existing CPF records from
+          <code>data.json</code>, showing
+          <strong>name, birth date, CPF, RG, course, period, days and roll call</strong>.
+          No new CPFs are generated – the app only works with the data you already have.
         </p>
       </div>
       <div class="pill">
         <span class="pill-dot"></span>
-        Somente leitura • Focado em segurança
+        Read-only • Privacy-focused
       </div>
     </header>
 
@@ -665,37 +675,37 @@
           <div class="card-header">
             <div class="card-title">
               <span class="bar"></span>
-              Filtros &amp; busca
+              Filters &amp; Search
             </div>
-            <span class="small-label" id="load-status">Carregando dados...</span>
+            <span class="small-label" id="load-status">Loading data...</span>
           </div>
 
           <div class="controls-grid">
             <div>
-              <div class="field-label">Buscar por nome ou CPF</div>
+              <div class="field-label">Search by name or CPF</div>
               <div class="field-group">
                 <input
                   type="text"
                   id="search-input"
-                  placeholder="Ex.: Ana, 123.456.789-00..."
+                  placeholder="e.g. Ana, 123.456.789-00..."
                 />
               </div>
             </div>
             <div>
-              <div class="field-label">Curso / Período / Dias</div>
+              <div class="field-label">Course / Period / Days</div>
               <div class="field-group">
                 <select id="course-filter">
-                  <option value="">Todos os cursos</option>
+                  <option value="">All courses</option>
                 </select>
                 <select id="period-filter">
-                  <option value="">Período</option>
-                  <option value="Manhã">Manhã</option>
-                  <option value="Tarde">Tarde</option>
+                  <option value="">Period</option>
+                  <option value="Manhã">Morning</option>
+                  <option value="Tarde">Afternoon</option>
                 </select>
                 <select id="days-filter">
-                  <option value="">Dias</option>
-                  <option value="Segunda e Terça">Segunda e Terça</option>
-                  <option value="Quarta e Quinta">Quarta e Quinta</option>
+                  <option value="">Days</option>
+                  <option value="Segunda e Terça">Monday & Tuesday</option>
+                  <option value="Quarta e Quinta">Wednesday & Thursday</option>
                 </select>
               </div>
             </div>
@@ -705,11 +715,11 @@
             <div class="toolbar-left">
               <button class="btn-primary" id="btn-random">
                 <span class="btn-icon">🎲</span>
-                Sortear CPF dos dados
+                Draw random CPF from data
               </button>
               <button class="btn-ghost" id="btn-clear">
                 <span class="btn-icon">🧹</span>
-                Limpar filtros
+                Clear filters
               </button>
             </div>
             <div class="toolbar-right">
@@ -717,10 +727,10 @@
                 <div class="switch-track">
                   <div class="switch-thumb"></div>
                 </div>
-                <span>CPF mascarado</span>
+                <span>Mask CPF</span>
               </label>
               <span class="summary" id="summary-text">
-                0 registros filtrados
+                0 filtered records
               </span>
             </div>
           </div>
@@ -730,20 +740,20 @@
               <table>
                 <thead>
                   <tr>
-                    <th>Nome</th>
-                    <th>Data de nascimento</th>
+                    <th>Name</th>
+                    <th>Birth date</th>
                     <th>CPF</th>
                     <th>RG</th>
-                    <th>Curso</th>
-                    <th>Período</th>
-                    <th>Dias</th>
-                    <th># Chamada</th>
+                    <th>Course</th>
+                    <th>Period</th>
+                    <th>Days</th>
+                    <th>Roll call</th>
                   </tr>
                 </thead>
                 <tbody id="results-body">
                   <tr>
                     <td colspan="8" class="no-results">
-                      Carregando registros...
+                      Loading records...
                     </td>
                   </tr>
                 </tbody>
@@ -752,36 +762,36 @@
             <div class="status-bar">
               <div class="status-pill">
                 <span class="indicator"></span>
-                <span id="status-text">Aguardando carregamento...</span>
+                <span id="status-text">Waiting for data...</span>
               </div>
               <span>
-                Fonte: <code>data.json</code>
+                Source: <code>data.json</code>
               </span>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- RIGHT: random highlight + info -->
+      <!-- RIGHT: random highlight + info + Telegram promo -->
       <section class="side-card">
         <div class="card">
           <div class="card-inner">
             <div class="card-header">
               <div class="card-title">
                 <span class="bar"></span>
-                CPF sorteado
+                Drawn CPF
               </div>
             </div>
             <div class="highlight-card" id="highlight">
               <div class="highlight-header">
                 <div>
                   <div class="highlight-title" id="highlight-name">
-                    Nenhum CPF sorteado ainda
+                    No CPF drawn yet
                   </div>
                   <div class="cpf-main" id="highlight-cpf">—</div>
                 </div>
                 <button class="btn-ghost" id="btn-copy-highlight" disabled>
-                  <span class="btn-icon">📋</span> Copiar CPF
+                  <span class="btn-icon">📋</span> Copy CPF
                 </button>
               </div>
               <div class="highlight-meta" id="highlight-meta">
@@ -789,9 +799,9 @@
               </div>
             </div>
             <p class="small-text" style="margin-top: 8px;">
-              Clique em <strong>“Sortear CPF dos dados”</strong> para escolher um registro aleatório
-              do arquivo <code>data.json</code> usando filtros atuais (curso, período, dias, busca).
-              Isso <strong>não cria novos CPFs</strong>, apenas reutiliza os existentes.
+              Click <strong>“Draw random CPF from data”</strong> to randomly pick one record from
+              <code>data.json</code>, using your current filters (course, period, days, search).
+              This <strong>does not generate new CPFs</strong> – it only reuses existing records.
             </p>
           </div>
         </div>
@@ -801,16 +811,40 @@
             <div class="card-header">
               <div class="card-title">
                 <span class="bar"></span>
-                Privacidade e uso responsável
+                Privacy & responsible use
               </div>
             </div>
             <p class="small-text">
-              Este painel foi pensado para uso interno, como consultas administrativas. Evite
-              publicar CPFs de terceiros em ambientes públicos.
+              This panel is intended for internal and administrative use only. Avoid sharing CPF
+              details of third parties in public channels.
               <br /><br />
-              <strong>Nós não geramos novos CPFs</strong> nem garantimos validade jurídica dos dados.
-              O sistema apenas <strong>organiza e exibe</strong> o conteúdo já presente em
+              <strong>No new CPFs are generated</strong>, and this tool does not validate data
+              legally. It only <strong>organizes and displays</strong> content already stored in
               <code>data.json</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-inner">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="bar"></span>
+                Community & Support
+              </div>
+            </div>
+            <p class="small-text">
+              Need help customizing this CPF Toolkit, or want more AI tools, bots and automation?
+              Join the Telegram channel:
+              <br /><br />
+              <strong>
+                <a class="link" href="https://t.me/drkingbd" target="_blank" rel="noopener">
+                  t.me/drkingbd
+                </a>
+              </strong>
+              <br /><br />
+              You’ll find tutorials, ready-made prompts, and updates for projects like
+              <code>cpf-gen.web.app</code>.
             </p>
           </div>
         </div>
@@ -820,7 +854,7 @@
 
   <div class="toast" id="toast">
     <span class="toast-icon">✅</span>
-    <span id="toast-text">Copiado!</span>
+    <span id="toast-text">Copied!</span>
   </div>
 
   <script>
@@ -857,15 +891,21 @@
     function formatCpf(cpf) {
       if (!cpf) return "";
       const digits = cpf.toString().replace(/\D/g, "").padStart(11, "0");
-      return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(
-        9
-      )}`;
+      return (
+        digits.slice(0, 3) +
+        "." +
+        digits.slice(3, 6) +
+        "." +
+        digits.slice(6, 9) +
+        "-" +
+        digits.slice(9)
+      );
     }
 
     function maskCpf(cpf) {
       const formatted = formatCpf(cpf);
       if (!formatted) return "";
-      const visible = formatted.slice(-2); // últimos 2 dígitos
+      const visible = formatted.slice(-2); // last 2 digits
       return "***.***.***-" + visible;
     }
 
@@ -908,7 +948,7 @@
 
       if (!filteredData.length) {
         resultsBody.innerHTML =
-          '<tr><td colspan="8" class="no-results">Nenhum registro encontrado com os filtros atuais.</td></tr>';
+          '<tr><td colspan="8" class="no-results">No records found for the current filters.</td></tr>';
       } else {
         const rows = filteredData
           .map((item, idx) => {
@@ -925,7 +965,7 @@
             <td>
               <div class="cpf-cell">
                 <span class="cpf-text">${cpfDisplay}</span>
-                <button class="btn-copy" data-copy="${formatCpf(item.cpf)}">Copiar</button>
+                <button class="btn-copy" data-copy="${formatCpf(item.cpf)}">Copy</button>
               </div>
             </td>
             <td>${item.rg || "-"}</td>
@@ -940,26 +980,26 @@
         resultsBody.innerHTML = rows;
       }
 
-      summaryText.innerHTML = `${filteredData.length} registro${
+      summaryText.innerHTML = `${filteredData.length} filtered record${
         filteredData.length === 1 ? "" : "s"
-      } filtrado${filteredData.length === 1 ? "" : "s"}`;
-      statusText.textContent = "Dados carregados com sucesso";
+      }`;
+      statusText.textContent = "Data loaded successfully";
 
-      // Botão de copiar CPF
+      // Copy CPF buttons
       document.querySelectorAll(".btn-copy").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
           const cpf = btn.getAttribute("data-copy");
           try {
             await navigator.clipboard.writeText(cpf);
-            showToast("CPF copiado para a área de transferência.");
+            showToast("CPF copied to clipboard.");
           } catch {
-            showToast("Não foi possível copiar o CPF.");
+            showToast("Unable to copy CPF.");
           }
         });
       });
 
-      // Clique na linha -> destaque
+      // Row click -> highlight
       document.querySelectorAll("#results-body tr[data-index]").forEach((tr) => {
         tr.addEventListener("click", () => {
           const idx = parseInt(tr.getAttribute("data-index"), 10);
@@ -972,7 +1012,7 @@
     function setHighlight(item) {
       if (!item) {
         currentHighlight = null;
-        highlightName.textContent = "Nenhum CPF selecionado";
+        highlightName.textContent = "No CPF selected";
         highlightCpf.textContent = "—";
         highlightMeta.innerHTML = "";
         btnCopyHighlight.disabled = true;
@@ -989,9 +1029,9 @@
       if (item.curso) meta.push(`<span>${item.curso}</span>`);
       if (item.periodo) meta.push(`<span>${item.periodo}</span>`);
       if (item.dias) meta.push(`<span>${item.dias}</span>`);
-      if (item.data_nascimento) meta.push(`<span>Nasc.: ${item.data_nascimento}</span>`);
+      if (item.data_nascimento) meta.push(`<span>Birth: ${item.data_nascimento}</span>`);
       if (item.rg) meta.push(`<span>RG: ${item.rg}</span>`);
-      if (item.chamada != null) meta.push(`<span>Chamada: ${item.chamada}</span>`);
+      if (item.chamada != null) meta.push(`<span>Roll: ${item.chamada}</span>`);
 
       highlightMeta.innerHTML = meta.join("");
       btnCopyHighlight.disabled = false;
@@ -1002,9 +1042,9 @@
       const cpf = formatCpf(currentHighlight.cpf);
       try {
         await navigator.clipboard.writeText(cpf);
-        showToast("CPF do registro selecionado copiado.");
+        showToast("Selected record CPF copied.");
       } catch {
-        showToast("Não foi possível copiar o CPF selecionado.");
+        showToast("Unable to copy selected CPF.");
       }
     }
 
@@ -1040,20 +1080,20 @@
       try {
         const res = await fetch("data.json", { cache: "no-store" });
         if (!res.ok) {
-          throw new Error("Erro HTTP: " + res.status);
+          throw new Error("HTTP error: " + res.status);
         }
         const data = await res.json();
         allData = Array.isArray(data) ? data : [];
         filteredData = [...allData];
 
         if (!allData.length) {
-          loadStatus.textContent = "Nenhum registro encontrado em data.json";
-          statusText.textContent = "Arquivo vazio ou formato inválido";
+          loadStatus.textContent = "No records found in data.json";
+          statusText.textContent = "Empty file or invalid format";
           renderTable();
           return;
         }
 
-        // Popular lista de cursos
+        // Populate course filter options
         const courses = Array.from(
           new Set(
             allData
@@ -1068,20 +1108,20 @@
           courseFilter.appendChild(opt);
         });
 
-        loadStatus.textContent = `Carregado: ${allData.length} registro${
+        loadStatus.textContent = `Loaded: ${allData.length} record${
           allData.length === 1 ? "" : "s"
         }`;
         applyFilters();
       } catch (err) {
         console.error(err);
-        loadStatus.innerHTML = '<span class="error">Falha ao carregar data.json</span>';
-        statusText.textContent = "Erro ao carregar dados";
+        loadStatus.innerHTML = '<span class="error">Failed to load data.json</span>';
+        statusText.textContent = "Error loading data";
         resultsBody.innerHTML =
-          '<tr><td colspan="8" class="no-results danger">Erro ao carregar o arquivo data.json. Verifique se ele está na mesma pasta que este HTML.</td></tr>';
+          '<tr><td colspan="8" class="no-results danger">Error loading data.json. Make sure it is in the same folder as this HTML file.</td></tr>';
       }
     }
 
-    // Eventos
+    // Events
     searchInput.addEventListener("input", () => {
       applyFilters();
     });
@@ -1100,11 +1140,11 @@
       e.preventDefault();
       const item = getRandomFromFiltered();
       if (!item) {
-        showToast("Não há registros para sortear.");
+        showToast("There are no records to draw from.");
         return;
       }
       setHighlight(item);
-      showToast("CPF sorteado a partir dos dados existentes.");
+      showToast("CPF drawn from existing data.");
     });
 
     maskSwitch.addEventListener("click", (e) => {
@@ -1117,7 +1157,7 @@
       copyHighlightCpf();
     });
 
-    // Inicialização
+    // Init
     (function init() {
       maskSwitch.classList.add("switch--on");
       loadData();
