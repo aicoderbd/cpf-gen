@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>CPF Generator (from data.json)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #050816;
+      --card: #0f172a;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --accent-strong: #0ea5e9;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --danger: #f97373;
+      --radius-xl: 18px;
+      --radius-lg: 12px;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.8);
+      --shadow-pill: 0 12px 30px rgba(15, 23, 42, 0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 40%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .title-block {
+      max-width: 640px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h1 span.badge {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent-soft), transparent);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--accent-strong);
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .subtitle strong {
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .pill {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      padding: 6px 14px;
+      border: 1px solid rgba(156, 163, 175, 0.45);
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-pill);
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #a5f3fc, var(--accent));
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.15fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #04101f, #020617 55%);
+      border-radius: var(--radius-xl);
+      padding: 16px 16px 14px;
+      border: 1px solid rgba(51, 65, 85, 0.9);
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at top right,
+        rgba(56, 189, 248, 0.16),
+        transparent 55%
+      );
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 0.92rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #a5b4fc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title span.bar {
+      flex-shrink: 0;
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #4ade80);
+      opacity: 0.9;
+    }
+
+    .small-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 650px) {
+      .controls-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .field-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .field-group {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 999px;
+      border: 1px solid rgba(51, 65, 85, 0.85);
+      color: var(--text);
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    input[type="text"]::placeholder {
+      color: #6b7280;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--accent-strong);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-size: 0.84rem;
+      border-radius: 999px;
+      padding: 7px 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease,
+        opacity 0.12s ease;
+      white-space: nowrap;
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: none;
+    }
+
+    .btn-primary {
+      background: radial-gradient(circle at 30% 0, #38bdf8, #0ea5e9);
+      color: #0b1120;
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.5);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.07);
+    }
+
+    .btn-ghost {
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--muted);
+      border: 1px solid rgba(75, 85, 99, 0.8);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(15, 23, 42, 1);
+      color: #e5e7eb;
+    }
+
+    .btn-icon {
+      font-size: 1rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .switch-track {
+      width: 36px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(30, 64, 175, 0.8);
+      position: relative;
+      transition: background 0.15s ease;
+    }
+
+    .switch-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transform: translateX(0);
+      transition: transform 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.7);
+    }
+
+    .switch--on .switch-track {
+      background: rgba(56, 189, 248, 0.9);
+    }
+
+    .switch--on .switch-thumb {
+      transform: translateX(18px);
+    }
+
+    .summary {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .summary strong {
+      color: var(--accent-strong);
+      font-weight: 600;
+    }
+
+    .results {
+      max-height: 320px;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(51, 65, 85, 0.9);
+      background: radial-gradient(circle at top left, #020617, #020617 60%);
+    }
+
+    .results-table-wrapper {
+      max-height: 290px;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      min-width: 100%;
+    }
+
+    thead {
+      background: rgba(15, 23, 42, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    th,
+    td {
+      padding: 6px 9px;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 500;
+      color: #9ca3af;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.95);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      background: inherit;
+      backdrop-filter: blur(8px);
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.96);
+    }
+
+    tbody tr:hover {
+      background: rgba(30, 64, 175, 0.6);
+    }
+
+    td {
+      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+      color: #e5e7eb;
+    }
+
+    td span.tag {
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: #cbd5f5;
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    td span.tag-soft {
+      border-color: rgba(56, 189, 248, 0.7);
+      color: #a5f3fc;
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .cpf-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cpf-text {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      font-size: 0.8rem;
+    }
+
+    .btn-copy {
+      padding: 3px 7px;
+      font-size: 0.74rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      color: #e5e7eb;
+    }
+
+    .btn-copy:hover {
+      background: rgba(30, 64, 175, 0.9);
+      border-color: rgba(129, 140, 248, 0.9);
+    }
+
+    .no-results {
+      padding: 14px 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 10px;
+      background: rgba(15, 23, 42, 0.95);
+      border-top: 1px solid rgba(51, 65, 85, 0.9);
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    .status-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+    }
+
+    .side-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .highlight-card {
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      background: radial-gradient(circle at top left, #0b1120, #020617 55%);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+    }
+
+    .highlight-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .highlight-title {
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .cpf-main {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .highlight-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    .highlight-meta span {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .small-text {
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .small-text strong {
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .danger {
+      color: var(--danger);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      background: rgba(15, 23, 42, 0.96);
+      color: var(--text);
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      border: 1px solid rgba(56, 189, 248, 0.6);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.95);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 50;
+    }
+
+    .toast-icon {
+      font-size: 1rem;
+    }
+
+    .toast.show {
+      display: inline-flex;
+      animation: fadeInOut 2.2s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      10% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      80% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title-block">
+        <h1>
+          CPF Toolkit
+          <span class="badge">data.json</span>
+        </h1>
+        <p class="subtitle">
+          Interface para <strong>buscar, filtrar e sortear</strong> CPFs existentes no arquivo
+          <code>data.json</code>. Nenhum CPF novo é criado – apenas trabalhamos com os dados já
+          existentes.
+        </p>
+      </div>
+      <div class="pill">
+        <span class="pill-dot"></span>
+        Somente leitura • Focado em segurança
+      </div>
+    </header>
+
+    <main>
+      <!-- LEFT: controls + table -->
+      <section class="card">
+        <div class="card-inner">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="bar"></span>
+              Filtros &amp; busca
+            </div>
+            <span class="small-label" id="load-status">Carregando dados...</span>
+          </div>
+
+          <div class="controls-grid">
+            <div>
+              <div class="field-label">Buscar por nome ou CPF</div>
+              <div class="field-group">
+                <input
+                  type="text"
+                  id="search-input"
+                  placeholder="Ex.: Ana, 123.456.789-00..."
+                />
+              </div>
+            </div>
+            <div>
+              <div class="field-label">Curso / Período / Dias</div>
+              <div class="field-group">
+                <select id="course-filter">
+                  <option value="">Todos os cursos</option>
+                </select>
+                <select id="period-filter">
+                  <option value="">Período</option>
+                  <option value="Manhã">Manhã</option>
+                  <option value="Tarde">Tarde</option>
+                </select>
+                <select id="days-filter">
+                  <option value="">Dias</option>
+                  <option value="Segunda e Terça">Segunda e Terça</option>
+                  <option value="Quarta e Quinta">Quarta e Quinta</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <button class="btn-primary" id="btn-random">
+                <span class="btn-icon">🎲</span>
+                Sortear CPF dos dados
+              </button>
+              <button class="btn-ghost" id="btn-clear">
+                <span class="btn-icon">🧹</span>
+                Limpar filtros
+              </button>
+            </div>
+            <div class="toolbar-right">
+              <label class="switch" id="mask-switch">
+                <div class="switch-track">
+                  <div class="switch-thumb"></div>
+                </div>
+                <span>CPF mascarado</span>
+              </label>
+              <span class="summary" id="summary-text">
+                0 registros filtrados
+              </span>
+            </div>
+          </div>
+
+          <div class="results">
+            <div class="results-table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Curso</th>
+                    <th>Período</th>
+                    <th>Dias</th>
+                  </tr>
+                </thead>
+                <tbody id="results-body">
+                  <tr>
+                    <td colspan="5" class="no-results">
+                      Carregando registros...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="status-bar">
+              <div class="status-pill">
+                <span class="indicator"></span>
+                <span id="status-text">Aguardando carregamento...</span>
+              </div>
+              <span>
+                Fonte: <code>data.json</code>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: random highlight + info -->
+      <section class="side-card">
+        <div class="card">
+          <div class="card-inner">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="bar"></span>
+                CPF sorteado
+              </div>
+            </div>
+            <div class="highlight-card" id="highlight">
+              <div class="highlight-header">
+                <div>
+                  <div class="highlight-title" id="highlight-name">
+                    Nenhum CPF sorteado ainda
+                  </div>
+                  <div class="cpf-main" id="highlight-cpf">—</div>
+                </div>
+                <button class="btn-ghost" id="btn-copy-highlight" disabled>
+                  <span class="btn-icon">📋</span> Copiar CPF
+                </button>
+              </div>
+              <div class="highlight-meta" id="highlight-meta">
+                <!-- Filled dynamically -->
+              </div>
+            </div>
+            <p class="small-text" style="margin-top: 8px;">
+              Clique em <strong>“Sortear CPF dos dados”</strong> para escolher um registro aleatório
+              do arquivo <code>data.json</code> usando filtros atuais (curso, período, dias, busca).
+              Isso <strong>não cria novos CPFs</strong>, apenas reutiliza os existentes.
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-inner">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="bar"></span>
+                Privacidade e uso responsável
+              </div>
+            </div>
+            <p class="small-text">
+              Este painel foi pensado para uso interno, como consultas administrativas. Evite
+              publicar CPFs de terceiros em ambientes públicos.
+              <br /><br />
+              <strong>Nós não geramos novos CPFs</strong> nem garantimos validade jurídica dos dados.
+              O sistema apenas <strong>organiza e exibe</strong> o conteúdo já presente em
+              <code>data.json</code>.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">
+    <span class="toast-icon">✅</span>
+    <span id="toast-text">Copiado!</span>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById("search-input");
+    const courseFilter = document.getElementById("course-filter");
+    const periodFilter = document.getElementById("period-filter");
+    const daysFilter = document.getElementById("days-filter");
+    const resultsBody = document.getElementById("results-body");
+    const summaryText = document.getElementById("summary-text");
+    const statusText = document.getElementById("status-text");
+    const loadStatus = document.getElementById("load-status");
+    const btnRandom = document.getElementById("btn-random");
+    const btnClear = document.getElementById("btn-clear");
+    const maskSwitch = document.getElementById("mask-switch");
+    const highlightName = document.getElementById("highlight-name");
+    const highlightCpf = document.getElementById("highlight-cpf");
+    const highlightMeta = document.getElementById("highlight-meta");
+    const btnCopyHighlight = document.getElementById("btn-copy-highlight");
+    const toast = document.getElementById("toast");
+    const toastText = document.getElementById("toast-text");
+
+    let allData = [];
+    let filteredData = [];
+    let maskCpfEnabled = true;
+    let currentHighlight = null;
+
+    function showToast(message) {
+      toastText.textContent = message;
+      toast.classList.remove("show");
+      void toast.offsetWidth; // force reflow
+      toast.classList.add("show");
+    }
+
+    function formatCpf(cpf) {
+      if (!cpf) return "";
+      const digits = cpf.toString().replace(/\D/g, "").padStart(11, "0");
+      return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(
+        9
+      )}`;
+    }
+
+    function maskCpf(cpf) {
+      const formatted = formatCpf(cpf);
+      if (!formatted) return "";
+      // Exibe apenas os últimos 2 dígitos
+      const visible = formatted.slice(-2);
+      return "***.***.***-" + visible;
+    }
+
+    function normalizeText(str) {
+      return (str || "")
+        .toString()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function applyFilters() {
+      const query = normalizeText(searchInput.value);
+      const course = courseFilter.value;
+      const period = periodFilter.value;
+      const days = daysFilter.value;
+
+      filteredData = allData.filter((item) => {
+        const matchesCourse = !course || item.curso === course;
+        const matchesPeriod = !period || item.periodo === period;
+        const matchesDays = !days || item.dias === days;
+
+        let matchesSearch = true;
+        if (query) {
+          const nameNorm = normalizeText(item.nome);
+          const cpfDigits = (item.cpf || "").toString().replace(/\D/g, "");
+          matchesSearch =
+            nameNorm.includes(query) ||
+            cpfDigits.includes(query.replace(/\D/g, ""));
+        }
+
+        return matchesCourse && matchesPeriod && matchesDays && matchesSearch;
+      });
+
+      renderTable();
+    }
+
+    function renderTable() {
+      resultsBody.innerHTML = "";
+
+      if (!filteredData.length) {
+        resultsBody.innerHTML =
+          '<tr><td colspan="5" class="no-results">Nenhum registro encontrado com os filtros atuais.</td></tr>';
+      } else {
+        const rows = filteredData
+          .map((item, idx) => {
+            const cpfDisplay = maskCpfEnabled ? maskCpf(item.cpf) : formatCpf(item.cpf);
+            const curso = item.curso || "-";
+            const periodo = item.periodo || "-";
+            const dias = item.dias || "-";
+
+            return `
+          <tr data-index="${idx}">
+            <td>${item.nome || "-"}</td>
+            <td>
+              <div class="cpf-cell">
+                <span class="cpf-text">${cpfDisplay}</span>
+                <button class="btn-copy" data-copy="${formatCpf(item.cpf)}">Copiar</button>
+              </div>
+            </td>
+            <td><span class="tag-soft">${curso}</span></td>
+            <td><span class="tag">${periodo}</span></td>
+            <td><span class="tag">${dias}</span></td>
+          </tr>
+        `;
+          })
+          .join("");
+        resultsBody.innerHTML = rows;
+      }
+
+      summaryText.innerHTML = `${filteredData.length} registro${
+        filteredData.length === 1 ? "" : "s"
+      } filtrado${filteredData.length === 1 ? "" : "s"}`;
+      statusText.textContent = "Dados carregados com sucesso";
+
+      // Attach copy handlers
+      document.querySelectorAll(".btn-copy").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const cpf = btn.getAttribute("data-copy");
+          try {
+            await navigator.clipboard.writeText(cpf);
+            showToast("CPF copiado para a área de transferência.");
+          } catch {
+            showToast("Não foi possível copiar o CPF.");
+          }
+        });
+      });
+
+      // Row click -> highlight
+      document.querySelectorAll("#results-body tr[data-index]").forEach((tr) => {
+        tr.addEventListener("click", () => {
+          const idx = parseInt(tr.getAttribute("data-index"), 10);
+          const item = filteredData[idx];
+          setHighlight(item);
+        });
+      });
+    }
+
+    function setHighlight(item) {
+      if (!item) {
+        currentHighlight = null;
+        highlightName.textContent = "Nenhum CPF selecionado";
+        highlightCpf.textContent = "—";
+        highlightMeta.innerHTML = "";
+        btnCopyHighlight.disabled = true;
+        return;
+      }
+
+      currentHighlight = item;
+      const cpfDisplay = maskCpfEnabled ? maskCpf(item.cpf) : formatCpf(item.cpf);
+
+      highlightName.textContent = item.nome || "-";
+      highlightCpf.textContent = cpfDisplay;
+
+      const meta = [];
+      if (item.curso)
+        meta.push(`<span>${item.curso}</span>`);
+      if (item.periodo)
+        meta.push(`<span>${item.periodo}</span>`);
+      if (item.dias)
+        meta.push(`<span>${item.dias}</span>`);
+      if (item.data_nascimento)
+        meta.push(`<span>Nasc.: ${item.data_nascimento}</span>`);
+
+      highlightMeta.innerHTML = meta.join("");
+      btnCopyHighlight.disabled = false;
+    }
+
+    async function copyHighlightCpf() {
+      if (!currentHighlight) return;
+      const cpf = formatCpf(currentHighlight.cpf);
+      try {
+        await navigator.clipboard.writeText(cpf);
+        showToast("CPF do registro selecionado copiado.");
+      } catch {
+        showToast("Não foi possível copiar o CPF selecionado.");
+      }
+    }
+
+    function clearFilters() {
+      searchInput.value = "";
+      courseFilter.value = "";
+      periodFilter.value = "";
+      daysFilter.value = "";
+      applyFilters();
+    }
+
+    function toggleMask() {
+      maskCpfEnabled = !maskCpfEnabled;
+      if (maskCpfEnabled) {
+        maskSwitch.classList.add("switch--on");
+      } else {
+        maskSwitch.classList.remove("switch--on");
+      }
+      // Re-render table and highlight with new mask state
+      renderTable();
+      if (currentHighlight) {
+        setHighlight(currentHighlight);
+      }
+    }
+
+    function getRandomFromFiltered() {
+      const base = filteredData.length ? filteredData : allData;
+      if (!base.length) return null;
+      const idx = Math.floor(Math.random() * base.length);
+      return base[idx];
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch("data.json", { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error("Erro HTTP: " + res.status);
+        }
+        const data = await res.json();
+        allData = Array.isArray(data) ? data : [];
+        filteredData = [...allData];
+
+        if (!allData.length) {
+          loadStatus.textContent = "Nenhum registro encontrado em data.json";
+          statusText.textContent = "Arquivo vazio ou formato inválido";
+          renderTable();
+          return;
+        }
+
+        // Populate course filter options
+        const courses = Array.from(
+          new Set(
+            allData
+              .map((d) => d.curso)
+              .filter(Boolean)
+          )
+        ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+        courses.forEach((c) => {
+          const opt = document.createElement("option");
+          opt.value = c;
+          opt.textContent = c;
+          courseFilter.appendChild(opt);
+        });
+
+        loadStatus.textContent = `Carregado: ${allData.length} registro${
+          allData.length === 1 ? "" : "s"
+        }`;
+        applyFilters();
+      } catch (err) {
+        console.error(err);
+        loadStatus.innerHTML = '<span class="error">Falha ao carregar data.json</span>';
+        statusText.textContent = "Erro ao carregar dados";
+        resultsBody.innerHTML =
+          '<tr><td colspan="5" class="no-results danger">Erro ao carregar o arquivo data.json. Verifique se ele está na mesma pasta que este HTML.</td></tr>';
+      }
+    }
+
+    // Event listeners
+    searchInput.addEventListener("input", () => {
+      applyFilters();
+    });
+
+    courseFilter.addEventListener("change", applyFilters);
+    periodFilter.addEventListener("change", applyFilters);
+    daysFilter.addEventListener("change", applyFilters);
+
+    btnClear.addEventListener("click", (e) => {
+      e.preventDefault();
+      clearFilters();
+      setHighlight(null);
+    });
+
+    btnRandom.addEventListener("click", (e) => {
+      e.preventDefault();
+      const item = getRandomFromFiltered();
+      if (!item) {
+        showToast("Não há registros para sortear.");
+        return;
+      }
+      setHighlight(item);
+      showToast("CPF sorteado a partir dos dados existentes.");
+    });
+
+    maskSwitch.addEventListener("click", (e) => {
+      e.preventDefault();
+      toggleMask();
+    });
+
+    btnCopyHighlight.addEventListener("click", (e) => {
+      e.preventDefault();
+      copyHighlightCpf();
+    });
+
+    // Initialize
+    (function init() {
+      maskSwitch.classList.add("switch--on");
+      loadData();
+    })();
+  </script>
+</body>
+</html>
