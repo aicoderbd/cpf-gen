@@ -2,8 +2,52 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>CPF Generator (from data.json)</title>
+  <title>CPF Toolkit – Buscar, filtrar e sortear CPFs do data.json</title>
+
+  <!-- SEO básico -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="CPF Toolkit: ferramenta em HTML para buscar, filtrar e sortear CPFs existentes no arquivo data.json, exibindo nome, data de nascimento, CPF, RG, curso, período, dias e chamada."
+  />
+  <meta
+    name="keywords"
+    content="cpf, gerador de cpf, lista de cpfs, consultar cpf, data.json, cadastro de alunos, cursos profissionalizantes"
+  />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://seu-dominio.com/cpf-toolkit" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:title" content="CPF Toolkit – Visualizador de CPFs do data.json" />
+  <meta
+    property="og:description"
+    content="Visualize, filtre e sorteie registros de CPF já existentes em data.json, com nome, data de nascimento, RG, curso, período, dias e chamada."
+  />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://seu-dominio.com/cpf-toolkit" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="CPF Toolkit – Visualizador de CPFs" />
+  <meta
+    name="twitter:description"
+    content="Ferramenta simples em HTML para consultar CPFs de data.json com filtros e sorteio seguro."
+  />
+
+  <!-- JSON-LD (ajuste a URL/domínio se quiser usar em produção) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CPF Toolkit - data.json Viewer",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "url": "https://seu-dominio.com/cpf-toolkit",
+    "description": "Ferramenta em HTML para buscar, filtrar e sortear CPFs existentes no arquivo data.json, exibindo nome, data de nascimento, CPF, RG, curso, período, dias e chamada."
+  }
+  </script>
+
   <style>
     :root {
       --bg: #050816;
@@ -604,8 +648,8 @@
         </h1>
         <p class="subtitle">
           Interface para <strong>buscar, filtrar e sortear</strong> CPFs existentes no arquivo
-          <code>data.json</code>. Nenhum CPF novo é criado – apenas trabalhamos com os dados já
-          existentes.
+          <code>data.json</code>, exibindo <strong>nome, data de nascimento, CPF, RG, curso, período, dias e chamada</strong>.
+          Nenhum CPF novo é criado – apenas trabalhamos com os dados já existentes.
         </p>
       </div>
       <div class="pill">
@@ -687,15 +731,18 @@
                 <thead>
                   <tr>
                     <th>Nome</th>
+                    <th>Data de nascimento</th>
                     <th>CPF</th>
+                    <th>RG</th>
                     <th>Curso</th>
                     <th>Período</th>
                     <th>Dias</th>
+                    <th># Chamada</th>
                   </tr>
                 </thead>
                 <tbody id="results-body">
                   <tr>
-                    <td colspan="5" class="no-results">
+                    <td colspan="8" class="no-results">
                       Carregando registros...
                     </td>
                   </tr>
@@ -818,8 +865,7 @@
     function maskCpf(cpf) {
       const formatted = formatCpf(cpf);
       if (!formatted) return "";
-      // Exibe apenas os últimos 2 dígitos
-      const visible = formatted.slice(-2);
+      const visible = formatted.slice(-2); // últimos 2 dígitos
       return "***.***.***-" + visible;
     }
 
@@ -862,7 +908,7 @@
 
       if (!filteredData.length) {
         resultsBody.innerHTML =
-          '<tr><td colspan="5" class="no-results">Nenhum registro encontrado com os filtros atuais.</td></tr>';
+          '<tr><td colspan="8" class="no-results">Nenhum registro encontrado com os filtros atuais.</td></tr>';
       } else {
         const rows = filteredData
           .map((item, idx) => {
@@ -870,19 +916,23 @@
             const curso = item.curso || "-";
             const periodo = item.periodo || "-";
             const dias = item.dias || "-";
+            const chamada = item.chamada != null ? item.chamada : "-";
 
             return `
           <tr data-index="${idx}">
             <td>${item.nome || "-"}</td>
+            <td>${item.data_nascimento || "-"}</td>
             <td>
               <div class="cpf-cell">
                 <span class="cpf-text">${cpfDisplay}</span>
                 <button class="btn-copy" data-copy="${formatCpf(item.cpf)}">Copiar</button>
               </div>
             </td>
+            <td>${item.rg || "-"}</td>
             <td><span class="tag-soft">${curso}</span></td>
             <td><span class="tag">${periodo}</span></td>
             <td><span class="tag">${dias}</span></td>
+            <td>${chamada}</td>
           </tr>
         `;
           })
@@ -895,7 +945,7 @@
       } filtrado${filteredData.length === 1 ? "" : "s"}`;
       statusText.textContent = "Dados carregados com sucesso";
 
-      // Attach copy handlers
+      // Botão de copiar CPF
       document.querySelectorAll(".btn-copy").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
@@ -909,7 +959,7 @@
         });
       });
 
-      // Row click -> highlight
+      // Clique na linha -> destaque
       document.querySelectorAll("#results-body tr[data-index]").forEach((tr) => {
         tr.addEventListener("click", () => {
           const idx = parseInt(tr.getAttribute("data-index"), 10);
@@ -936,14 +986,12 @@
       highlightCpf.textContent = cpfDisplay;
 
       const meta = [];
-      if (item.curso)
-        meta.push(`<span>${item.curso}</span>`);
-      if (item.periodo)
-        meta.push(`<span>${item.periodo}</span>`);
-      if (item.dias)
-        meta.push(`<span>${item.dias}</span>`);
-      if (item.data_nascimento)
-        meta.push(`<span>Nasc.: ${item.data_nascimento}</span>`);
+      if (item.curso) meta.push(`<span>${item.curso}</span>`);
+      if (item.periodo) meta.push(`<span>${item.periodo}</span>`);
+      if (item.dias) meta.push(`<span>${item.dias}</span>`);
+      if (item.data_nascimento) meta.push(`<span>Nasc.: ${item.data_nascimento}</span>`);
+      if (item.rg) meta.push(`<span>RG: ${item.rg}</span>`);
+      if (item.chamada != null) meta.push(`<span>Chamada: ${item.chamada}</span>`);
 
       highlightMeta.innerHTML = meta.join("");
       btnCopyHighlight.disabled = false;
@@ -975,7 +1023,6 @@
       } else {
         maskSwitch.classList.remove("switch--on");
       }
-      // Re-render table and highlight with new mask state
       renderTable();
       if (currentHighlight) {
         setHighlight(currentHighlight);
@@ -1006,7 +1053,7 @@
           return;
         }
 
-        // Populate course filter options
+        // Popular lista de cursos
         const courses = Array.from(
           new Set(
             allData
@@ -1030,11 +1077,11 @@
         loadStatus.innerHTML = '<span class="error">Falha ao carregar data.json</span>';
         statusText.textContent = "Erro ao carregar dados";
         resultsBody.innerHTML =
-          '<tr><td colspan="5" class="no-results danger">Erro ao carregar o arquivo data.json. Verifique se ele está na mesma pasta que este HTML.</td></tr>';
+          '<tr><td colspan="8" class="no-results danger">Erro ao carregar o arquivo data.json. Verifique se ele está na mesma pasta que este HTML.</td></tr>';
       }
     }
 
-    // Event listeners
+    // Eventos
     searchInput.addEventListener("input", () => {
       applyFilters();
     });
@@ -1070,7 +1117,7 @@
       copyHighlightCpf();
     });
 
-    // Initialize
+    // Inicialização
     (function init() {
       maskSwitch.classList.add("switch--on");
       loadData();
